@@ -8,6 +8,11 @@ export default [
         path: '/entry/input',
         component: './infomation',
       },
+      {
+        path: '/entry/result',
+        component: './result',
+        hideInMenu: true,
+      },
     ],
   },
   {

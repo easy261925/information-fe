@@ -1,7 +1,6 @@
 import request from '@/utils/axios';
-import { DidParams } from '@/pages/setting/dic/data';
 
-export async function getAllDicService(params: DidParams) {
+export async function getAllDicService(params: any) {
   return request(`/server/api/sysDict/sysDict`, {
     params,
   }).then((res: any) => {
@@ -13,14 +12,14 @@ export async function getAllDicService(params: DidParams) {
   });
 }
 
-export async function createDicService(params: DidParams) {
+export async function createDicService(params: any) {
   return request(`/server/api/sysDict/sysDict`, {
     body: params,
     method: 'POST',
   });
 }
 
-export async function updateDicService(params: DidParams) {
+export async function updateDicService(params: any) {
   return request(`/server/api/sysDict/sysDict/${params.id}`, {
     body: params,
     method: 'PUT',
