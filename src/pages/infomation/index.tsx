@@ -9,7 +9,7 @@ import { history } from 'umi'
 import { getPageQuery } from '@/utils/utils';
 import { createService } from './service';
 
-const townData = ['新立镇', '唐家镇', '新开镇', '东风镇', '西安镇', '平安镇']
+export const townData = ['新立镇', '唐家镇', '新开镇', '东风镇', '西安镇', '平安镇']
 const villageData = [
   ['新欣社区', '唐家村委会', '张家村委会', '云家村委会', '杨家村委会', '苏家村委会', '孙家村委会', '史家村委会'],
   ['新建社区', '白家村委会', '唐家铺村委会', '南小房村委会', '北窑村委会', '朱家村委会', '葛家村委会', '陈家村委会', '刘家村委会', '袁家村委会', '杜家村委会', '四十里村委会'],
@@ -205,7 +205,17 @@ const Infomation = () => {
         <Form.Item
           label="户主手机号码"
           name="phone"
-          rules={[{ required: true, message: '请填写户主手机号码!' }]}
+          rules={[{
+            required: true, validator: (_, value) => {
+              if (!value) {
+                return Promise.reject('请填写户主手机号码')
+              }
+              if (!/^(?:(?:\+|00)86)?1\d{10}$/.test(value)) {
+                return Promise.reject('手机号格式错误')
+              }
+              return Promise.resolve()
+            }
+          }]}
         >
           <Input placeholder='请填写户主手机号码' />
         </Form.Item>
@@ -216,7 +226,7 @@ const Infomation = () => {
               valuePropName="fileList"
               getValueFromEvent={normFile}
             >
-              <Upload name="IDA" action="/upload.do" listType="picture" maxCount={1} accept='image/*'>
+              <Upload name="IDA" action="/server/api/files/connect" listType="picture" maxCount={1} accept='image/*'>
                 <Button><UploadOutlined />身份证正面</Button>
               </Upload>
             </Form.Item>
@@ -227,7 +237,7 @@ const Infomation = () => {
               valuePropName="fileList"
               getValueFromEvent={normFile}
             >
-              <Upload name="IDB" action="/upload.do" listType="picture" maxCount={1} accept='image/*'>
+              <Upload name="IDB" action="/server/api/files/connect" listType="picture" maxCount={1} accept='image/*'>
                 <Button><UploadOutlined />身份证背面</Button>
               </Upload>
             </Form.Item>
@@ -241,7 +251,7 @@ const Infomation = () => {
           valuePropName="fileList"
           getValueFromEvent={normFile}
         >
-          <Upload multiple name="HKB" action="/upload.do" listType="picture" accept='image/*'>
+          <Upload multiple name="HKB" action="/server/api/files/connect" listType="picture" accept='image/*'>
             <Button><UploadOutlined />户主户口本</Button>
           </Upload>
         </Form.Item>
@@ -252,7 +262,7 @@ const Infomation = () => {
           valuePropName="fileList"
           getValueFromEvent={normFile}
         >
-          <Upload multiple name="FWCQZ" action="/upload.do" listType="picture" accept='image/*'>
+          <Upload multiple name="FWCQZ" action="/server/api/files/connect" listType="picture" accept='image/*'>
             <Button><UploadOutlined />房屋产权证</Button>
           </Upload>
         </Form.Item>
@@ -263,7 +273,7 @@ const Infomation = () => {
           valuePropName="fileList"
           getValueFromEvent={normFile}
         >
-          <Upload multiple name="TDSYZ" action="/upload.do" listType="picture" accept='image/*'>
+          <Upload multiple name="TDSYZ" action="/server/api/files/connect" listType="picture" accept='image/*'>
             <Button><UploadOutlined />土地使用证</Button>
           </Upload>
         </Form.Item>
@@ -275,7 +285,7 @@ const Infomation = () => {
           getValueFromEvent={normFile}
           style={{ marginTop: 10 }}
         >
-          <Upload multiple name="QTQSZM" action="/upload.do" listType="picture" accept='image/*'>
+          <Upload multiple name="QTQSZM" action="/server/api/files/connect" listType="picture" accept='image/*'>
             <Button><UploadOutlined />其他权属证明材料</Button>
           </Upload>
         </Form.Item>
@@ -287,7 +297,7 @@ const Infomation = () => {
           getValueFromEvent={normFile}
           style={{ marginTop: 10 }}
         >
-          <Upload multiple name="QTCL" action="/upload.do" listType="picture" accept='image/*'>
+          <Upload multiple name="QTCL" action="/server/api/files/connect" listType="picture" accept='image/*'>
             <Button><UploadOutlined />其他材料</Button>
           </Upload>
         </Form.Item>
@@ -304,6 +314,14 @@ const Infomation = () => {
             <Form.Item
               label="房屋持有人(1)手机号码"
               name="phoneA1"
+              rules={[{
+                validator: (_, value) => {
+                  if (value && !/^(?:(?:\+|00)86)?1\d{10}$/.test(value)) {
+                    return Promise.reject('手机号格式错误')
+                  }
+                  return Promise.resolve()
+                }
+              }]}
             >
               <Input placeholder='请填写房屋持有人(1)手机号码' />
             </Form.Item>
@@ -313,7 +331,7 @@ const Infomation = () => {
               getValueFromEvent={normFile}
               style={{ marginTop: 10 }}
             >
-              <Upload name="IDA1" action="/upload.do" listType="picture" maxCount={1} accept='image/*'>
+              <Upload name="IDA1" action="/server/api/files/connect" listType="picture" maxCount={1} accept='image/*'>
                 <Button><UploadOutlined />房屋持有人(1)身份证正面</Button>
               </Upload>
             </Form.Item>
@@ -323,7 +341,7 @@ const Infomation = () => {
               getValueFromEvent={normFile}
               style={{ marginTop: 10 }}
             >
-              <Upload name="IDB1" action="/upload.do" listType="picture" maxCount={1} accept='image/*'>
+              <Upload name="IDB1" action="/server/api/files/connect" listType="picture" maxCount={1} accept='image/*'>
                 <Button><UploadOutlined />房屋持有人(1)身份证背面</Button>
               </Upload>
             </Form.Item>
@@ -338,6 +356,14 @@ const Infomation = () => {
             <Form.Item
               label="房屋持有人(2)手机号码"
               name="phoneA2"
+              rules={[{
+                validator: (_, value) => {
+                  if (value && !/^(?:(?:\+|00)86)?1\d{10}$/.test(value)) {
+                    return Promise.reject('手机号格式错误')
+                  }
+                  return Promise.resolve()
+                }
+              }]}
             >
               <Input placeholder='请填写房屋持有人(2)手机号码' />
             </Form.Item>
@@ -347,7 +373,7 @@ const Infomation = () => {
               getValueFromEvent={normFile}
               style={{ marginTop: 10 }}
             >
-              <Upload name="IDA2" action="/upload.do" listType="picture" maxCount={1} accept='image/*'>
+              <Upload name="IDA2" action="/server/api/files/connect" listType="picture" maxCount={1} accept='image/*'>
                 <Button><UploadOutlined />房屋持有人(2)身份证正面</Button>
               </Upload>
             </Form.Item>
@@ -357,7 +383,7 @@ const Infomation = () => {
               getValueFromEvent={normFile}
               style={{ marginTop: 10 }}
             >
-              <Upload name="IDB2" action="/upload.do" listType="picture" maxCount={1} accept='image/*'>
+              <Upload name="IDB2" action="/server/api/files/connect" listType="picture" maxCount={1} accept='image/*'>
                 <Button><UploadOutlined />房屋持有人(2)身份证背面</Button>
               </Upload>
             </Form.Item>
@@ -369,7 +395,7 @@ const Infomation = () => {
               valuePropName="fileList"
               getValueFromEvent={normFile}
             >
-              <Upload multiple name="HKB1" action="/upload.do" listType="picture" accept='image/*'>
+              <Upload multiple name="HKB1" action="/server/api/files/connect" listType="picture" accept='image/*'>
                 <Button><UploadOutlined />户口本信息</Button>
               </Upload>
             </Form.Item>
@@ -380,7 +406,7 @@ const Infomation = () => {
               valuePropName="fileList"
               getValueFromEvent={normFile}
             >
-              <Upload multiple name="FWCQLY" action="/upload.do" listType="picture" accept='image/*'>
+              <Upload multiple name="FWCQLY" action="/server/api/files/connect" listType="picture" accept='image/*'>
                 <Button><UploadOutlined />房屋产权来源</Button>
               </Upload>
             </Form.Item>
