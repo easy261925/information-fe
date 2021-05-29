@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Button, Col, Collapse, Divider, Form, Input, message, Modal, Row, Select, Upload } from 'antd'
+import { Button, Col, Collapse, Divider, Form, Input, message, Modal, Row, Select, Spin, Upload } from 'antd'
 import Header from './components/header'
 import { useForm } from 'antd/lib/form/Form';
 import styles from './index.less';
@@ -21,6 +21,7 @@ const villageData = [
 
 const Infomation = () => {
   const [townId, setTownId] = useState('0')
+  const [loading, setLoading] = useState(false)
   const [form] = useForm()
   useEffect(() => {
     const params = getPageQuery();
@@ -153,8 +154,10 @@ const Infomation = () => {
         okText: '确认',
         cancelText: '取消',
         onOk() {
+          setLoading(true)
           createService(payload).then(res => {
             console.log('res', res)
+            setLoading(false)
             if (res.success) {
               message.success('提交成功')
               history.push('/entry/result')
@@ -179,241 +182,243 @@ const Infomation = () => {
   };
 
   return (
-    <Form form={form} className={styles.container}>
-      <Header title={`${townData[townId]}信息采集`} onSubmit={onSubmit} />
-      <div style={{ padding: 10 }}>
-        <Form.Item
-          label="村名"
-          name="villageName"
-          rules={[{ required: true, message: '请填写村名!' }]}
-        >
-          <Select>
-            {
-              villageData[townId].map((item: string) => {
-                return <Select.Option key={item} value={item}>{item}</Select.Option>
-              })
-            }
-          </Select>
-        </Form.Item>
-        <Form.Item
-          label="户主姓名"
-          name="username"
-          rules={[{ required: true, message: '请填写户主姓名!' }]}
-        >
-          <Input placeholder='请填写户主姓名' />
-        </Form.Item>
-        <Form.Item
-          label="户主手机号码"
-          name="phone"
-          rules={[{
-            required: true, validator: (_, value) => {
-              if (!value) {
-                return Promise.reject('请填写户主手机号码')
+    <Spin spinning={loading} tip="正在加载数据...">
+      <Form form={form} className={styles.container}>
+        <Header title={`${townData[townId]}信息采集`} onSubmit={onSubmit} />
+        <div style={{ padding: 10 }}>
+          <Form.Item
+            label="村名"
+            name="villageName"
+            rules={[{ required: true, message: '请填写村名!' }]}
+          >
+            <Select>
+              {
+                villageData[townId].map((item: string) => {
+                  return <Select.Option key={item} value={item}>{item}</Select.Option>
+                })
               }
-              if (!/^(?:(?:\+|00)86)?1\d{10}$/.test(value)) {
-                return Promise.reject('手机号格式错误')
+            </Select>
+          </Form.Item>
+          <Form.Item
+            label="户主姓名"
+            name="username"
+            rules={[{ required: true, message: '请填写户主姓名!' }]}
+          >
+            <Input placeholder='请填写户主姓名' />
+          </Form.Item>
+          <Form.Item
+            label="户主手机号码"
+            name="phone"
+            rules={[{
+              required: true, validator: (_, value) => {
+                if (!value) {
+                  return Promise.reject('请填写户主手机号码')
+                }
+                if (!/^(?:(?:\+|00)86)?1\d{10}$/.test(value)) {
+                  return Promise.reject('手机号格式错误')
+                }
+                return Promise.resolve()
               }
-              return Promise.resolve()
-            }
-          }]}
-        >
-          <Input placeholder='请填写户主手机号码' />
-        </Form.Item>
-        <Row style={{ marginTop: 10 }}>
-          <Col span={12}>
-            <Form.Item
-              name="IDA"
-              valuePropName="fileList"
-              getValueFromEvent={normFile}
-            >
-              <Upload name="IDA" action="/server/api/files/connect" listType="picture" maxCount={1} accept='image/*'>
-                <Button><UploadOutlined />身份证正面</Button>
-              </Upload>
-            </Form.Item>
-          </Col>
-          <Col span={12}>
-            <Form.Item
-              name="IDB"
-              valuePropName="fileList"
-              getValueFromEvent={normFile}
-            >
-              <Upload name="IDB" action="/server/api/files/connect" listType="picture" maxCount={1} accept='image/*'>
-                <Button><UploadOutlined />身份证背面</Button>
-              </Upload>
-            </Form.Item>
-          </Col>
-        </Row>
+            }]}
+          >
+            <Input placeholder='请填写户主手机号码' />
+          </Form.Item>
+          <Row style={{ marginTop: 10 }}>
+            <Col span={12}>
+              <Form.Item
+                name="IDA"
+                valuePropName="fileList"
+                getValueFromEvent={normFile}
+              >
+                <Upload name="IDA" action="/server/api/files/connect" listType="picture" maxCount={1} accept='image/*'>
+                  <Button><UploadOutlined />身份证正面</Button>
+                </Upload>
+              </Form.Item>
+            </Col>
+            <Col span={12}>
+              <Form.Item
+                name="IDB"
+                valuePropName="fileList"
+                getValueFromEvent={normFile}
+              >
+                <Upload name="IDB" action="/server/api/files/connect" listType="picture" maxCount={1} accept='image/*'>
+                  <Button><UploadOutlined />身份证背面</Button>
+                </Upload>
+              </Form.Item>
+            </Col>
+          </Row>
 
-        <Divider style={{ marginBottom: 0 }}>户口本信息</Divider>
-        <Row justify='center' style={{ color: 'red' }}>（户口本每一页照片）</Row>
-        <Form.Item
-          name="HKB"
-          valuePropName="fileList"
-          getValueFromEvent={normFile}
-        >
-          <Upload multiple name="HKB" action="/server/api/files/connect" listType="picture" accept='image/*'>
-            <Button><UploadOutlined />户主户口本</Button>
-          </Upload>
-        </Form.Item>
-        <Divider style={{ marginBottom: 0 }} >房屋产权证</Divider>
-        <Row justify='center' style={{ color: 'red' }}>（房屋产权证每一页照片）</Row>
-        <Form.Item
-          name="FWCQZ"
-          valuePropName="fileList"
-          getValueFromEvent={normFile}
-        >
-          <Upload multiple name="FWCQZ" action="/server/api/files/connect" listType="picture" accept='image/*'>
-            <Button><UploadOutlined />房屋产权证</Button>
-          </Upload>
-        </Form.Item>
-        <Divider style={{ marginBottom: 0 }}>土地使用证</Divider>
-        <Row justify='center' style={{ color: 'red' }}>（土地使用证每一页照片）</Row>
-        <Form.Item
-          name="TDSYZ"
-          valuePropName="fileList"
-          getValueFromEvent={normFile}
-        >
-          <Upload multiple name="TDSYZ" action="/server/api/files/connect" listType="picture" accept='image/*'>
-            <Button><UploadOutlined />土地使用证</Button>
-          </Upload>
-        </Form.Item>
-        <Divider style={{ marginBottom: 0 }}>其他权属证明材料</Divider>
-        <Row justify='center' style={{ color: 'red' }}>（遗嘱、买卖协议、公证书、结婚证等）</Row>
-        <Form.Item
-          name="QTQSZM"
-          valuePropName="fileList"
-          getValueFromEvent={normFile}
-          style={{ marginTop: 10 }}
-        >
-          <Upload multiple name="QTQSZM" action="/server/api/files/connect" listType="picture" accept='image/*'>
-            <Button><UploadOutlined />其他权属证明材料</Button>
-          </Upload>
-        </Form.Item>
-        <Divider style={{ marginBottom: 0 }}>其他材料</Divider>
-        <Row justify='center' style={{ color: 'red' }}>（集体建设用地除上述五类资料之外还需额外收集营业执照、经营许可证、组织机构代码证等材料）</Row>
-        <Form.Item
-          name="QTCL"
-          valuePropName="fileList"
-          getValueFromEvent={normFile}
-          style={{ marginTop: 10 }}
-        >
-          <Upload multiple name="QTCL" action="/server/api/files/connect" listType="picture" accept='image/*'>
-            <Button><UploadOutlined />其他材料</Button>
-          </Upload>
-        </Form.Item>
+          <Divider style={{ marginBottom: 0 }}>户口本信息</Divider>
+          <Row justify='center' style={{ color: 'red' }}>（户口本每一页照片）</Row>
+          <Form.Item
+            name="HKB"
+            valuePropName="fileList"
+            getValueFromEvent={normFile}
+          >
+            <Upload multiple name="HKB" action="/server/api/files/connect" listType="picture" accept='image/*'>
+              <Button><UploadOutlined />户主户口本</Button>
+            </Upload>
+          </Form.Item>
+          <Divider style={{ marginBottom: 0 }} >房屋产权证</Divider>
+          <Row justify='center' style={{ color: 'red' }}>（房屋产权证每一页照片）</Row>
+          <Form.Item
+            name="FWCQZ"
+            valuePropName="fileList"
+            getValueFromEvent={normFile}
+          >
+            <Upload multiple name="FWCQZ" action="/server/api/files/connect" listType="picture" accept='image/*'>
+              <Button><UploadOutlined />房屋产权证</Button>
+            </Upload>
+          </Form.Item>
+          <Divider style={{ marginBottom: 0 }}>土地使用证</Divider>
+          <Row justify='center' style={{ color: 'red' }}>（土地使用证每一页照片）</Row>
+          <Form.Item
+            name="TDSYZ"
+            valuePropName="fileList"
+            getValueFromEvent={normFile}
+          >
+            <Upload multiple name="TDSYZ" action="/server/api/files/connect" listType="picture" accept='image/*'>
+              <Button><UploadOutlined />土地使用证</Button>
+            </Upload>
+          </Form.Item>
+          <Divider style={{ marginBottom: 0 }}>其他权属证明材料</Divider>
+          <Row justify='center' style={{ color: 'red' }}>（遗嘱、买卖协议、公证书、结婚证等）</Row>
+          <Form.Item
+            name="QTQSZM"
+            valuePropName="fileList"
+            getValueFromEvent={normFile}
+            style={{ marginTop: 10 }}
+          >
+            <Upload multiple name="QTQSZM" action="/server/api/files/connect" listType="picture" accept='image/*'>
+              <Button><UploadOutlined />其他权属证明材料</Button>
+            </Upload>
+          </Form.Item>
+          <Divider style={{ marginBottom: 0 }}>其他材料</Divider>
+          <Row justify='center' style={{ color: 'red' }}>（集体建设用地除上述五类资料之外还需额外收集营业执照、经营许可证、组织机构代码证等材料）</Row>
+          <Form.Item
+            name="QTCL"
+            valuePropName="fileList"
+            getValueFromEvent={normFile}
+            style={{ marginTop: 10 }}
+          >
+            <Upload multiple name="QTCL" action="/server/api/files/connect" listType="picture" accept='image/*'>
+              <Button><UploadOutlined />其他材料</Button>
+            </Upload>
+          </Form.Item>
 
-        <Collapse style={{ marginTop: 10 }}>
-          <Collapse.Panel header="房屋持有人与产权证不一致" key="1">
-            <Divider>房屋持有人(1)</Divider>
-            <Form.Item
-              label="房屋持有人(1)姓名"
-              name="usernameA1"
-            >
-              <Input placeholder='请填写房屋持有人姓名(1)' />
-            </Form.Item>
-            <Form.Item
-              label="房屋持有人(1)手机号码"
-              name="phoneA1"
-              rules={[{
-                validator: (_, value) => {
-                  if (value && !/^(?:(?:\+|00)86)?1\d{10}$/.test(value)) {
-                    return Promise.reject('手机号格式错误')
+          <Collapse style={{ marginTop: 10 }}>
+            <Collapse.Panel header="房屋持有人与产权证不一致" key="1">
+              <Divider>房屋持有人(1)</Divider>
+              <Form.Item
+                label="房屋持有人(1)姓名"
+                name="usernameA1"
+              >
+                <Input placeholder='请填写房屋持有人姓名(1)' />
+              </Form.Item>
+              <Form.Item
+                label="房屋持有人(1)手机号码"
+                name="phoneA1"
+                rules={[{
+                  validator: (_, value) => {
+                    if (value && !/^(?:(?:\+|00)86)?1\d{10}$/.test(value)) {
+                      return Promise.reject('手机号格式错误')
+                    }
+                    return Promise.resolve()
                   }
-                  return Promise.resolve()
-                }
-              }]}
-            >
-              <Input placeholder='请填写房屋持有人(1)手机号码' />
-            </Form.Item>
-            <Form.Item
-              name="IDA1"
-              valuePropName="fileList"
-              getValueFromEvent={normFile}
-              style={{ marginTop: 10 }}
-            >
-              <Upload name="IDA1" action="/server/api/files/connect" listType="picture" maxCount={1} accept='image/*'>
-                <Button><UploadOutlined />房屋持有人(1)身份证正面</Button>
-              </Upload>
-            </Form.Item>
-            <Form.Item
-              name="IDB1"
-              valuePropName="fileList"
-              getValueFromEvent={normFile}
-              style={{ marginTop: 10 }}
-            >
-              <Upload name="IDB1" action="/server/api/files/connect" listType="picture" maxCount={1} accept='image/*'>
-                <Button><UploadOutlined />房屋持有人(1)身份证背面</Button>
-              </Upload>
-            </Form.Item>
-            {/* 房屋持有人2 */}
-            <Divider>房屋持有人(2)</Divider>
-            <Form.Item
-              label="房屋持有人(2)姓名"
-              name="usernameA2"
-            >
-              <Input placeholder='请填写房屋持有人(2)姓名' />
-            </Form.Item>
-            <Form.Item
-              label="房屋持有人(2)手机号码"
-              name="phoneA2"
-              rules={[{
-                validator: (_, value) => {
-                  if (value && !/^(?:(?:\+|00)86)?1\d{10}$/.test(value)) {
-                    return Promise.reject('手机号格式错误')
+                }]}
+              >
+                <Input placeholder='请填写房屋持有人(1)手机号码' />
+              </Form.Item>
+              <Form.Item
+                name="IDA1"
+                valuePropName="fileList"
+                getValueFromEvent={normFile}
+                style={{ marginTop: 10 }}
+              >
+                <Upload name="IDA1" action="/server/api/files/connect" listType="picture" maxCount={1} accept='image/*'>
+                  <Button><UploadOutlined />房屋持有人(1)身份证正面</Button>
+                </Upload>
+              </Form.Item>
+              <Form.Item
+                name="IDB1"
+                valuePropName="fileList"
+                getValueFromEvent={normFile}
+                style={{ marginTop: 10 }}
+              >
+                <Upload name="IDB1" action="/server/api/files/connect" listType="picture" maxCount={1} accept='image/*'>
+                  <Button><UploadOutlined />房屋持有人(1)身份证背面</Button>
+                </Upload>
+              </Form.Item>
+              {/* 房屋持有人2 */}
+              <Divider>房屋持有人(2)</Divider>
+              <Form.Item
+                label="房屋持有人(2)姓名"
+                name="usernameA2"
+              >
+                <Input placeholder='请填写房屋持有人(2)姓名' />
+              </Form.Item>
+              <Form.Item
+                label="房屋持有人(2)手机号码"
+                name="phoneA2"
+                rules={[{
+                  validator: (_, value) => {
+                    if (value && !/^(?:(?:\+|00)86)?1\d{10}$/.test(value)) {
+                      return Promise.reject('手机号格式错误')
+                    }
+                    return Promise.resolve()
                   }
-                  return Promise.resolve()
-                }
-              }]}
-            >
-              <Input placeholder='请填写房屋持有人(2)手机号码' />
-            </Form.Item>
-            <Form.Item
-              name="IDA2"
-              valuePropName="fileList"
-              getValueFromEvent={normFile}
-              style={{ marginTop: 10 }}
-            >
-              <Upload name="IDA2" action="/server/api/files/connect" listType="picture" maxCount={1} accept='image/*'>
-                <Button><UploadOutlined />房屋持有人(2)身份证正面</Button>
-              </Upload>
-            </Form.Item>
-            <Form.Item
-              name="IDB2"
-              valuePropName="fileList"
-              getValueFromEvent={normFile}
-              style={{ marginTop: 10 }}
-            >
-              <Upload name="IDB2" action="/server/api/files/connect" listType="picture" maxCount={1} accept='image/*'>
-                <Button><UploadOutlined />房屋持有人(2)身份证背面</Button>
-              </Upload>
-            </Form.Item>
+                }]}
+              >
+                <Input placeholder='请填写房屋持有人(2)手机号码' />
+              </Form.Item>
+              <Form.Item
+                name="IDA2"
+                valuePropName="fileList"
+                getValueFromEvent={normFile}
+                style={{ marginTop: 10 }}
+              >
+                <Upload name="IDA2" action="/server/api/files/connect" listType="picture" maxCount={1} accept='image/*'>
+                  <Button><UploadOutlined />房屋持有人(2)身份证正面</Button>
+                </Upload>
+              </Form.Item>
+              <Form.Item
+                name="IDB2"
+                valuePropName="fileList"
+                getValueFromEvent={normFile}
+                style={{ marginTop: 10 }}
+              >
+                <Upload name="IDB2" action="/server/api/files/connect" listType="picture" maxCount={1} accept='image/*'>
+                  <Button><UploadOutlined />房屋持有人(2)身份证背面</Button>
+                </Upload>
+              </Form.Item>
 
-            <Divider style={{ marginBottom: 0 }}>户口本信息</Divider>
-            <Row justify='center' style={{ color: 'red' }}>（户口本每一页照片）</Row>
-            <Form.Item
-              name="HKB1"
-              valuePropName="fileList"
-              getValueFromEvent={normFile}
-            >
-              <Upload multiple name="HKB1" action="/server/api/files/connect" listType="picture" accept='image/*'>
-                <Button><UploadOutlined />户口本信息</Button>
-              </Upload>
-            </Form.Item>
-            <Divider style={{ marginBottom: 0 }}>房屋产权来源的相关证明</Divider>
-            <Row justify='center' style={{ color: 'red' }}>房屋产权来源是指产权人取得房屋产权的时间和方式，如继承、分析、买受、受赠、交换、自建、翻建、征用、收购、调拨、价拨、拨用等。产权来源有两种以上的，应全部说明（注：资料需自行准备）。</Row>
-            <Form.Item
-              name="FWCQLY"
-              valuePropName="fileList"
-              getValueFromEvent={normFile}
-            >
-              <Upload multiple name="FWCQLY" action="/server/api/files/connect" listType="picture" accept='image/*'>
-                <Button><UploadOutlined />房屋产权来源</Button>
-              </Upload>
-            </Form.Item>
-          </Collapse.Panel>
-        </Collapse>
-      </div>
-    </Form >
+              <Divider style={{ marginBottom: 0 }}>户口本信息</Divider>
+              <Row justify='center' style={{ color: 'red' }}>（户口本每一页照片）</Row>
+              <Form.Item
+                name="HKB1"
+                valuePropName="fileList"
+                getValueFromEvent={normFile}
+              >
+                <Upload multiple name="HKB1" action="/server/api/files/connect" listType="picture" accept='image/*'>
+                  <Button><UploadOutlined />户口本信息</Button>
+                </Upload>
+              </Form.Item>
+              <Divider style={{ marginBottom: 0 }}>房屋产权来源的相关证明</Divider>
+              <Row justify='center' style={{ color: 'red' }}>房屋产权来源是指产权人取得房屋产权的时间和方式，如继承、分析、买受、受赠、交换、自建、翻建、征用、收购、调拨、价拨、拨用等。产权来源有两种以上的，应全部说明（注：资料需自行准备）。</Row>
+              <Form.Item
+                name="FWCQLY"
+                valuePropName="fileList"
+                getValueFromEvent={normFile}
+              >
+                <Upload multiple name="FWCQLY" action="/server/api/files/connect" listType="picture" accept='image/*'>
+                  <Button><UploadOutlined />房屋产权来源</Button>
+                </Upload>
+              </Form.Item>
+            </Collapse.Panel>
+          </Collapse>
+        </div>
+      </Form >
+    </Spin>
   );
 }
 

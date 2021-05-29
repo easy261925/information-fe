@@ -7,6 +7,7 @@ import { setAuthority } from '@/utils/authority';
 import { getPageQuery } from '@/utils/utils';
 import { setToken, removeToken } from '@/utils/axios';
 import { message } from 'antd';
+import { getUserInfoService } from '@/services/user';
 
 export type StateType = {
   status?: boolean;
@@ -50,6 +51,12 @@ const Model: LoginModelType = {
       });
       if (success) {
         setToken(data.token);
+        const userResult = yield call(getUserInfoService);
+        setAuthority(userResult.data.authority);
+        yield put({
+          type: 'user/saveCurrentUser',
+          payload: userResult.data.user,
+        });
         const urlParams = new URL(window.location.href);
         const params = getPageQuery();
         message.success('登录成功！');
