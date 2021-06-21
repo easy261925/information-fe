@@ -11,3 +11,22 @@ export async function getDataService(params: any) {
     };
   });
 }
+
+export async function transferService(id: string) {
+  return request(`/server/api/baidu/makeFile/${id}`)
+}
+
+export async function deleteService(id: string) {
+  return request(`/server/api/files/files/${id}`, {
+    method: 'DELETE'
+  })
+}
+
+export async function downloadService(id: string) {
+  return request(`/server/api/files/downloadFiles/${id}`)
+}
+
+export async function zipImageByIdService(id: string) {
+  return request(`/server/api/files/zipFileById/${id}`)
+}
+

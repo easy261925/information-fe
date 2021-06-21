@@ -1,13 +1,14 @@
-import { CCProTable } from '@/components/easycc-rc-4';
-import ProTable from '@ant-design/pro-table';
-import { Row, Select } from 'antd';
+import ProTable, { ActionType } from '@ant-design/pro-table';
+import { Divider, message, Modal, Popconfirm, Row } from 'antd';
 import { CCColumns, CCDrawer, FormModeEnum } from 'easycc-rc-4';
-import React from 'react';
-import { townData } from '../infomation';
-import { getDataService } from './service';
+import React, { useRef, useState } from 'react';
+import { deleteService, downloadService, getDataService, transferService, zipImageByIdService } from './service';
 
 function Admin() {
   const imgStyle = { width: 100, height: 100 }
+  const [loading, setLoading] = useState(false)
+
+  const ref = useRef<ActionType>();
 
   const columns: CCColumns<any>[] | any = [
     {
@@ -246,6 +247,115 @@ function Admin() {
         </Row>
       }
     },
+    {
+      title: '文字识别结果',
+      dataIndex: 'wordUrl',
+      render: (dom: string, entity: any) => {
+        if (entity.wordUrl) {
+          return <a onClick={() => window.open(dom)}>下载word文件</a>
+        }
+        return ''
+      }
+    },
+    {
+      title: '操作',
+      dataIndex: 'options',
+      render: (dom: any, entity: any) => {
+        return <>
+          <a onClick={() => {
+            if (entity.transfer) {
+              Modal.confirm({
+                title: '此用户已转换Word文档，是否需要再次转换',
+                onOk: () => {
+                  setLoading(true)
+                  transferService(entity.id).then(res => {
+                    setLoading(false)
+                    if (res.success) {
+                      message.success('转换成功')
+                      ref.current?.reload()
+                    }
+                  })
+                }
+              })
+              return
+            }
+            setLoading(true)
+            transferService(entity.id).then(res => {
+              setLoading(false)
+              if (res.success) {
+                message.success('转换成功')
+                ref.current?.reload()
+              }
+            })
+          }}>转换文字</a>
+          <Divider type="vertical" />
+          <a onClick={() => {
+            if (entity.zipImages) {
+              Modal.confirm({
+                title: '此用户图片已经压缩完成，是否需要再次压缩',
+                onOk: () => {
+                  setLoading(true)
+                  zipImageByIdService(entity.id).then(res => {
+                    setLoading(false)
+                    if (res.success) {
+                      message.success('压缩图片成功')
+                    }
+                  })
+                }
+              })
+              return
+            }
+            setLoading(true)
+            zipImageByIdService(entity.id).then(res => {
+              setLoading(false)
+              if (res.success) {
+                message.success('压缩图片成功')
+              }
+            })
+          }}>压缩图片</a>
+          <Divider type="vertical" />
+          <a onClick={async () => {
+            setLoading(true)
+            if (!entity.zipImages) {
+              const aipImagesResult = await zipImageByIdService(entity.id)
+              if (aipImagesResult.success) {
+                message.success('压缩图片成功')
+              }
+            }
+            if (!entity.transfer) {
+              const transferResult = await transferService(entity.id)
+              if (transferResult.success) {
+                message.success('转换文字成功')
+              }
+            }
+            const downloadRes = await downloadService(entity.id)
+            setLoading(false)
+            if (downloadRes.success) {
+              console.log('获取下载地址')
+              console.log('downloadRes', downloadRes)
+              ref.current?.reload()
+              Modal.confirm({
+                title: '导出成功，是否需要下载',
+                onOk: () => {
+                  window.open(downloadRes.data.url)
+                }
+              })
+            }
+          }}>导出</a>
+          <Divider type="vertical" />
+          <Popconfirm title='确认删除' onConfirm={() => {
+            deleteService(entity.id).then(res => {
+              if (res.success) {
+                message.success('删除成功')
+                ref.current?.reload()
+              }
+            })
+          }}>
+            <a style={{ color: 'red' }}>删除</a>
+          </Popconfirm>
+        </>
+      }
+    }
   ]
   return (
     <div>
@@ -254,6 +364,8 @@ function Admin() {
         toolBarRender={() => []}
         columns={columns}
         request={getDataService}
+        loading={loading}
+        actionRef={ref}
       />
     </div>
   );
