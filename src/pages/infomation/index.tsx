@@ -191,7 +191,7 @@ const Infomation = () => {
             name="villageName"
             rules={[{ required: true, message: '请填写村名!' }]}
           >
-            <Select>
+            <Select listHeight={800}>
               {
                 villageData[townId].map((item: string) => {
                   return <Select.Option key={item} value={item}>{item}</Select.Option>
