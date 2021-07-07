@@ -1,12 +1,13 @@
 import ProTable, { ActionType } from '@ant-design/pro-table';
-import { Divider, message, Modal, Popconfirm, Row } from 'antd';
+import { Button, Divider, message, Modal, Popconfirm, Row } from 'antd';
 import { CCColumns, CCDrawer, FormModeEnum } from 'easycc-rc-4';
 import React, { useRef, useState } from 'react';
-import { deleteService, downloadService, getDataService, transferService, zipImageByIdService } from './service';
+import { deleteAllService, deleteService, downloadService, getDataService, transferService, zipImageByIdService } from './service';
 
 function Admin() {
   const imgStyle = { width: 100, height: 100 }
   const [loading, setLoading] = useState(false)
+  const [selectedRowKeys, setSelectedRowKeys] = useState<number[]>([])
 
   const ref = useRef<ActionType>();
 
@@ -366,6 +367,22 @@ function Admin() {
         request={getDataService}
         loading={loading}
         actionRef={ref}
+        rowSelection={{
+          selectedRowKeys,
+          onChange: (keys: any) => {
+            setSelectedRowKeys(keys)
+          }
+        }}
+        tableAlertOptionRender={() => <Popconfirm title='确认删除?' onConfirm={() => {
+          deleteAllService(selectedRowKeys).then(res => {
+            if (res.success) {
+              message.success('删除成功')
+              ref.current?.reload()
+            }
+          })
+        }}>
+          <Button danger >批量删除</Button>
+        </Popconfirm>}
       />
     </div>
   );

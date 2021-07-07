@@ -30,3 +30,10 @@ export async function zipImageByIdService(id: string) {
   return request(`/server/api/files/zipFileById/${id}`)
 }
 
+export async function deleteAllService(fileIdList: number[]) {
+  return request(`/server/api/files/filesAll`, {
+    body: { fileIdList },
+    method: 'POST'
+  })
+}
+
